@@ -9,14 +9,14 @@
     {
       "sourceType": "com.mw.config.DataSourceConfig",
       "name": "hraux.datasource",
-      "sourceMethod": "public org.springframework.boot.autoconfigure.jdbc.DataSourceProperties hrauxDataSourceProperties() ",
-      "type": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
+      "sourceMethod": "public javax.sql.DataSource hrauxDataSource() ",
+      "type": "javax.sql.DataSource"
     },
     {
       "sourceType": "com.mw.config.DataSourceConfig",
       "name": "hraux.datasource",
-      "sourceMethod": "public javax.sql.DataSource hrauxDataSource() ",
-      "type": "javax.sql.DataSource"
+      "sourceMethod": "public org.springframework.boot.autoconfigure.jdbc.DataSourceProperties hrauxDataSourceProperties() ",
+      "type": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
     },
     {
       "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties",
