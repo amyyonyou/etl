@@ -5,15 +5,6 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/target/generated-sources/annotations"/>
-        <dependent-module archiveName="mw-base-0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/mw-base/mw-base">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="mw-web-base-0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/mw-web-base/mw-web-base">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="mw-plugin-jdbc-0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/mw-plugin-jdbc/mw-plugin-jdbc">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <property name="context-root" value="mw-etl-java"/>
         <property name="java-output-path" value="/mw-etl-java/target/classes"/>
     </wb-module>
