@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mw.ctdb.sys.dict.DictDao">
+	
+    <insert id="add">
+        insert into scada_data.tdict(nb, cd, lb, val, descr, rmk, seq_nb, add_dt, add_by, status) 
+        values(sdict.nextval, #{cd}, #{lb}, #{val}, #{descr, jdbcType=VARCHAR}, #{rmk, jdbcType=VARCHAR}, #{seqNb, jdbcType=INTEGER}, #{addDt}, #{addBy}, #{status})
+    </insert>
+    
+    <update id="updByNb">
+		update scada_data.tdict 
+		set cd = #{cd}, lb = #{lb}, val = #{val}, descr = #{descr, jdbcType=VARCHAR}, rmk = #{rmk, jdbcType=VARCHAR}, seq_nb = #{seqNb, jdbcType=INTEGER}, status = #{status}, upd_dt = #{updDt}, upd_by = #{updBy} 
+		where nb = #{nb}
+    </update>
+    
+    <update id="updStatusByNb">
+		update scada_data.tdict 
+		set status = #{status}, upd_dt = #{updDt}, upd_by = #{updBy} 
+		where nb = #{nb}
+    </update>
+    
+    <update id="updValByNb">
+		update scada_data.tdict 
+		set val = #{val}, upd_dt = #{updDt}, upd_by = #{updBy}
+		where nb = #{nb}
+    </update>
+    
+    <update id="updValByCdAndLb">
+		update scada_data.tdict 
+		set val = #{val}, upd_dt = #{updDt}, upd_by = #{updBy}
+		where cd = #{cd}
+		and lb = #{lb}
+    </update>
+    
+    <select id="getByNb" resultType="Dict">
+        select
+        	nb, cd, lb, val, descr, rmk, seq_nb as seqNb,
+        	add_dt as addDt, add_by as addBy,
+        	upd_dt as updDt, upd_by as updBy,
+        	status
+        from scada_data.tdict
+        where
+        	nb = #{nb}
+    </select>
+    
+    <select id="getByCdAndVal" resultType="Dict">
+		select
+			nb, cd, lb, val, descr, rmk, seq_nb as seqNb,
+        	add_dt as addDt, add_by as addBy,
+        	upd_dt as updDt, upd_by as updBy,
+        	status
+		from scada_data.tdict
+		where 
+			cd = #{cd}
+			and val = #{val}
+			and status = 0
+	</select>
+    
+    <select id="getBy" resultType="Dict">
+        <if test="page != null">
+	    select * from ( select row_.*, rownum rownum_ from ( 
+	    </if>
+        
+        select
+        	nb, cd, lb, val, descr, rmk, seq_nb as seqNb,
+        	add_dt as addDt, add_by as addBy,
+        	upd_dt as updDt, upd_by as updBy,
+        	status
+        from scada_data.tdict
+        where 1=1
+        	<if test="ffMap.nb != null and ffMap.nb != ''">
+        	    and nb = #{ffMap.nb}
+        	</if>
+        	<if test="ffMap.cd != null and ffMap.cd != ''">
+        	    and cd = #{ffMap.cd}
+        	</if>
+        	<if test="ffMap.lb != null and ffMap.lb != ''">
+        	    and lb = #{ffMap.lb}
+        	</if>
+        	<if test="ffMap.val != null and ffMap.val != ''">
+        	    and val = #{ffMap.val}
+        	</if>
+        	<if test="ffMap.status != null and ffMap.status != ''">
+        	    and status = #{ffMap.status}
+        	</if>
+        order by nb, seq_nb
+        
+        <if test="page != null">
+	    <![CDATA[
+		) row_ ) where rownum_ > #{page.start} and rownum_ <= #{page.end}
+		]]>
+		</if>
+    </select>
+    
+    <select id="getCountBy" resultType="Integer">
+        select
+        	count(1) as ct
+        from scada_data.tdict
+        where 1=1
+        	<if test="ffMap.nb != null and ffMap.nb != ''">
+        	    and nb = #{ffMap.nb}
+        	</if>
+        	<if test="ffMap.cd != null and ffMap.cd != ''">
+        	    and cd = #{ffMap.cd}
+        	</if>
+        	<if test="ffMap.lb != null and ffMap.lb != ''">
+        	    and lb = #{ffMap.lb}
+        	</if>
+        	<if test="ffMap.val != null and ffMap.val != ''">
+        	    and val = #{ffMap.val}
+        	</if>
+        	<if test="ffMap.status != null and ffMap.status != ''">
+        	    and status = #{ffMap.status}
+        	</if>
+    </select>
+    
+	<select id="getCds" resultType="String">
+		select
+		cd
+		from scada_data.tdict
+		group by cd
+	</select>
+	
+	<select id="getLbAndValByCd" resultType="Dict">
+		select
+			lb, val
+		from scada_data.tdict
+		where 
+			cd = #{cd}
+			and status = 0
+		order by seq_nb
+	</select>
+	
+</mapper> 

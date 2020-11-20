@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<jmxConfigurator />
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/var/logs/dms_mw.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/var/logs/dms_mw.%d{yyyy-MM-dd}.log</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- project default level -->
+	<logger name="com.mw" level="INFO" />
+
+	<!--log4jdbc -->
+	<logger name="jdbc.sqltiming" level="INFO" />
+
+	<!-- <logger name="com.mw.base.filter.logging.LoggingFilter" level="DEBUG" /> -->
+	<logger name="com.mw.ctdb.rtdb.modifydelta.ModifyDeltaDao" level="DEBUG" />
+	<logger name="com.mw.ctdb.rtdb.modifylog.ModifyLogDao" level="DEBUG" />
+	<logger name="com.mw.ctdb.rtdb.sensor.Scada2015SensorDao" level="DEBUG" />
+	<logger name="com.mw.ctdb.sys.dict.DictDao" level="DEBUG" />
+
+	<!-- cxf inbound/outbound logger -->
+	<!-- <logger name="org.apache.cxf.services" level="INFO" /> -->
+
+	<!-- root -->
+	<root level="INFO">
+		<appender-ref ref="console" />
+		<appender-ref ref="rollingFile" />
+	</root>
+</configuration>

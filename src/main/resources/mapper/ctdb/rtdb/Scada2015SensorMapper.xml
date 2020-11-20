@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mw.ctdb.rtdb.sensor.Scada2015SensorDao">
+    
+    <select id="getNextSeqNo" resultType="Integer">
+        select max(seqno) + 1 from scada_data.scada2015_sensor
+    </select>
+    
+    <insert id="add">
+		insert into scada_data.scada2015_sensor(
+		SEQNO, NEW_TABLE_NAME, NEW_FIELD_NAME, FIELD_DESC, 
+		SAMPLE_PERIOD, DATA_UNIT, FIELD_TYPE, 
+		SCADA_TAG_NAME, SCADA_TAG_DESC, SCADA_TAG_ADJUST_NAME, 
+		OLD_TABLE_NAME, OLD_FIELD_NAME, 
+		MINVALUE, MAXVALUE,
+		ADD_DT, ADD_BY)      
+		values(
+		#{seqNo, jdbcType=INTEGER}, #{tableName, jdbcType=VARCHAR}, #{fieldName, jdbcType=VARCHAR}, #{fieldDesc, jdbcType=VARCHAR},
+		#{samplePeriod, jdbcType=VARCHAR}, #{dataUnit, jdbcType=VARCHAR}, #{fieldType, jdbcType=VARCHAR}, 
+		#{scadaTagName, jdbcType=VARCHAR}, #{scadaTagDesc, jdbcType=VARCHAR}, #{scadaTagAdjustName, jdbcType=VARCHAR}, 
+		#{oldTableName, jdbcType=VARCHAR}, #{oldFieldName, jdbcType=VARCHAR}, 
+		#{minValue, jdbcType=DOUBLE}, #{maxValue, jdbcType=DOUBLE},
+		#{addDt}, #{addBy})
+    </insert>
+		
+    <delete id="delById">
+        delete from scada_data.scada2015_sensor where seqno = #{seqNo}
+    </delete>
+    
+    <update id="updById">
+        update scada_data.scada2015_sensor set
+        NEW_TABLE_NAME = #{tableName, jdbcType=INTEGER},
+        NEW_FIELD_NAME = #{fieldName, jdbcType=VARCHAR}, 
+        FIELD_DESC = #{fieldDesc, jdbcType=VARCHAR},
+		SAMPLE_PERIOD = #{samplePeriod, jdbcType=VARCHAR}, 
+		DATA_UNIT = #{dataUnit, jdbcType=VARCHAR}, 
+		FIELD_TYPE = #{fieldType, jdbcType=VARCHAR}, 
+		SCADA_TAG_NAME = #{scadaTagName, jdbcType=VARCHAR}, 
+		SCADA_TAG_DESC = #{scadaTagDesc, jdbcType=VARCHAR}, 
+		SCADA_TAG_ADJUST_NAME = #{scadaTagAdjustName, jdbcType=VARCHAR}, 
+		OLD_TABLE_NAME = #{oldTableName, jdbcType=VARCHAR}, 
+		OLD_FIELD_NAME = #{oldFieldName, jdbcType=VARCHAR}, 
+		MINVALUE = #{minValue, jdbcType=DOUBLE}, 
+		MAXVALUE = #{maxValue, jdbcType=DOUBLE},
+		UPD_DT = #{updDt}, UPD_BY = #{updBy}
+		where SEQNO = #{seqNo}
+    </update>
+    
+	<select id="getById" resultType="Scada2015Sensor">
+	    select 
+	    	SEQNO as seqNo,
+	    	NEW_TABLE_NAME as tableName,
+	        NEW_FIELD_NAME as fieldName, 
+	        FIELD_DESC as fieldDesc,
+			SAMPLE_PERIOD as samplePeriod, 
+			DATA_UNIT as dataUnit, 
+			FIELD_TYPE as fieldType, 
+			SCADA_TAG_NAME as scadaTagName, 
+			SCADA_TAG_DESC as scadaTagDesc, 
+			SCADA_TAG_ADJUST_NAME as scadaTagAdjustName, 
+			OLD_TABLE_NAME as oldTableName, 
+			OLD_FIELD_NAME as oldFieldName, 
+			MINVALUE as minValue, 
+			MAXVALUE as maxValue,
+			UPD_DT as updDt,
+			UPD_BY as updBy
+		from scada_data.scada2015_sensor
+		where
+			SEQNO = #{seqNo}
+	</select>
+	
+	<select id="getBy" resultType="Scada2015Sensor">
+	    <if test="page != null">
+	    select * from ( select row_.*, rownum rownum_ from ( 
+	    </if>
+	    
+	    select 
+	    	SEQNO as seqNo,
+	    	NEW_TABLE_NAME as tableName,
+	        NEW_FIELD_NAME as fieldName, 
+	        FIELD_DESC as fieldDesc,
+			SAMPLE_PERIOD as samplePeriod, 
+			DATA_UNIT as dataUnit, 
+			FIELD_TYPE as fieldType, 
+			SCADA_TAG_NAME as scadaTagName, 
+			SCADA_TAG_DESC as scadaTagDesc, 
+			SCADA_TAG_ADJUST_NAME as scadaTagAdjustName, 
+			OLD_TABLE_NAME as oldTableName, 
+			OLD_FIELD_NAME as oldFieldName, 
+			MINVALUE as minValue, 
+			MAXVALUE as maxValue,
+			UPD_DT as updDt,
+			UPD_BY as updBy
+		from scada_data.scada2015_sensor
+		where 1=1
+			<if test="ffMap.seqNo != null and ffMap.seqNo != ''">
+			    and SEQNO = #{ffMap.seqNo}
+			</if>
+			<if test="ffMap.tableName != null and ffMap.tableName != ''">
+			    and NEW_TABLE_NAME = #{ffMap.tableName}
+			</if>
+			<if test="ffMap.fieldName != null and ffMap.fieldName != ''">
+			    and NEW_FIELD_NAME = #{ffMap.fieldName}
+			</if>
+		
+		<choose>
+	    <when test="page != null">
+	    <![CDATA[
+		) row_ ) where rownum_ > #{page.start} and rownum_ <= #{page.end}
+		order by seqNo
+		]]>
+	    </when>
+	    <otherwise>
+	      order by SEQNO
+	    </otherwise>
+	  	</choose>
+	</select>
+	
+	<select id="getCountBy" resultType="Integer">
+	    select 
+	    	count(1)
+		from scada_data.scada2015_sensor
+		where 1=1
+			<if test="ffMap.seqNo != null and ffMap.seqNo != ''">
+			    and SEQNO = #{ffMap.seqNo}
+			</if>
+			<if test="ffMap.tableName != null and ffMap.tableName != ''">
+			    and NEW_TABLE_NAME = #{ffMap.tableName}
+			</if>
+			<if test="ffMap.fieldName != null and ffMap.fieldName != ''">
+			    and NEW_FIELD_NAME = #{ffMap.fieldName}
+			</if>
+	</select>
+  
+	<select id="getByTableAndFieldName" resultType="Scada2015Sensor">
+	    select 
+	    	SEQNO as seqNo,
+	    	NEW_TABLE_NAME as tableName,
+	        NEW_FIELD_NAME as fieldName, 
+	        FIELD_DESC as fieldDesc,
+			SAMPLE_PERIOD as samplePeriod, 
+			DATA_UNIT as dataUnit, 
+			FIELD_TYPE as fieldType, 
+			SCADA_TAG_NAME as scadaTagName, 
+			SCADA_TAG_DESC as scadaTagDesc, 
+			SCADA_TAG_ADJUST_NAME as scadaTagAdjustName, 
+			OLD_TABLE_NAME as oldTableName, 
+			OLD_FIELD_NAME as oldFieldName, 
+			MINVALUE as minValue, 
+			MAXVALUE as maxValue
+		from scada_data.scada2015_sensor
+		where
+			NEW_TABLE_NAME = #{tableName}
+			and NEW_FIELD_NAME = #{fieldName}
+	</select>
+	
+	<select id="getTableNameList" resultType="String">
+	    select NEW_TABLE_NAME as tableName
+	    from scada_data.scada2015_sensor
+	    where 1=1
+	    <if test="fieldTypeArray != null">
+	        and field_type in
+	        <foreach item="item" index="index" collection="fieldTypeArray"
+		      open="(" separator="," close=")">
+		        #{item}
+		  </foreach>
+	    </if>
+	    group by NEW_TABLE_NAME
+	    order by lower(NEW_TABLE_NAME)
+	</select>
+	
+	<select id="getFieldNameList" resultType="Map">
+	    select NEW_FIELD_NAME as fieldName, FIELD_DESC as fieldDesc
+	    from scada_data.scada2015_sensor
+	    where NEW_FIELD_NAME is not null
+	    <if test="fieldTypeArray != null">
+	        and field_type in
+	        <foreach item="item" index="index" collection="fieldTypeArray"
+		      open="(" separator="," close=")">
+		        #{item}
+		  </foreach>
+	    </if>
+	    order by lower(NEW_FIELD_NAME)
+	</select>
+	
+	<select id="getFieldNameListByTableName" resultType="Map">
+	    select NEW_FIELD_NAME as fieldName, FIELD_DESC as fieldDesc
+	    from scada_data.scada2015_sensor
+	    where NEW_TABLE_NAME = #{tableName}
+	    and NEW_FIELD_NAME is not null
+	    order by lower(NEW_FIELD_NAME)
+	</select>
+	
+	<select id="getTableNameByFieldName" resultType="String">
+	    select NEW_TABLE_NAME
+	    from scada_data.scada2015_sensor
+	    where NEW_FIELD_NAME = #{fieldName}
+	</select>
+	
+</mapper>

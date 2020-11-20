@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mw.ctdb.rtdb.modifylog.ModifyLogDao">
+
+    <select id="getNextBatchSeq" resultType="Long">
+        select scada_data.seq_modify_batch.nextval from dual
+    </select>
+    
+	<insert id="addTS">
+		insert into scada_data.modify_log
+		(nb, batch_nb, table_name, field_name, sensordd, ori_field_value, new_field_value, modify_reason, modify_method, modify_by, modify_dt, cd_status)
+		values
+		(scada_data.seq_modify_log.nextval, #{batchNb}, #{tableName}, #{fieldName}, #{sensorDd}, #{oriFieldValue,jdbcType=DOUBLE}, #{newFieldValue}, #{modifyReason,jdbcType=VARCHAR}, #{modifyMethod,jdbcType=VARCHAR}, #{modifyBy,jdbcType=VARCHAR}, #{modifyDt}, #{statusCd})
+	</insert>
+	
+	<!-- <update id="updTS">
+	    update modify_log
+	    set 
+	    	batch_nb = #{batchNb},
+	    	new_field_value = #{newFieldValue},
+	    	modify_reason = #{modifyReason}, 
+	    	modify_method = #{modifyMethod}, 
+	    	modify_by = #{modifyBy}, 
+	    	modify_dt = #{modifyDt},
+	    	cd_status = #{statusCd},
+	    	sync_ctdb_dt = null,
+	    	sync_scada_dt = null
+	    where
+	    	table_name = #{tableName}
+	    	and field_name = #{fieldName}
+	    	and sensordd = #{sensorDd}
+	</update> -->
+	
+	<update id="updStatusByBatchNb">
+	    update scada_data.modify_log
+	    set cd_status = #{statusCd},
+	    	sync_ctdb_dt = #{syncCtdbDt}
+	    where
+	    	batch_nb = #{batchNb}
+	</update>
+	
+	<update id="updSyncScadaDt">
+	    update scada_data.modify_log
+	    set sync_scada_dt = #{syncScadaDt}
+	    where
+	    	nb = #{nb}
+	</update>
+
+	<select id="getByBatchNbAndStatusCd" resultType="ModifyLog">
+		select
+			table_name as tableName,
+			field_name as fieldName,
+			sensordd as sensorDd,
+			ori_field_value as oriFieldValue,
+			new_field_value as newFieldValue
+		from scada_data.modify_log
+		where
+			batch_nb = #{batchNb}
+			and cd_status = #{statusCd}
+	</select>
+	
+	<select id="getBy" resultType="ModifyLog">
+	    <if test="page != null">
+	    select * from ( select row_.*, rownum rownum_ from ( 
+	    </if>
+	    
+	    select
+			ml.table_name as tableName,
+			ml.field_name as fieldName,
+			ml.sensordd as sensorDd,
+			(select ori_field_value from scada_data.modify_log where nb = (select min(nb) from scada_data.modify_log where table_name = ml.table_name and field_name = ml.field_name and sensordd = ml.sensordd and cd_status = 2)) as oriFieldValue,
+			--ml.ori_field_value as oriFieldValue,
+			ml.new_field_value as newFieldValue,
+			ml.modify_reason as modifyReason,
+			ml.modify_method as modifyMethod,
+			ml.modify_by as modifyBy,
+			ml.modify_dt as modifyDt,
+			ml.sync_scada_dt as syncScadaDt
+		from scada_data.modify_log ml
+		where 1=1
+			<if test="ffMap.tableName != null and ffMap.tableName != ''">
+			    and ml.table_name = #{ffMap.tableName}
+			</if>
+			<if test="ffMap.fieldName != null and ffMap.fieldName != ''">
+			    and ml.field_name = #{ffMap.fieldName}
+			</if>
+			<if test="ffMap.begDt != null and ffMap.begDt != ''">
+			    <![CDATA[
+			    and ml.sensordd >=  to_date(#{ffMap.begDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    ]]>
+			</if>
+			<if test="ffMap.endDt != null and ffMap.endDt != ''">
+			    <![CDATA[
+			    and ml.sensordd <=  to_date(#{ffMap.endDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    ]]>
+			</if>
+			and ml.cd_status = 2
+			and ml.nb = (select max(tl.nb) from scada_data.modify_log tl where tl.table_name = ml.table_name and tl.field_name = ml.field_name and tl.sensordd = ml.sensordd and tl.cd_status = 2)
+			order by ml.batch_nb desc, ml.sensordd
+	    <if test="page != null">
+	    <![CDATA[
+		) row_ ) where rownum_ > #{page.start} and rownum_ <= #{page.end}
+		]]>
+	    </if>
+	</select>
+	
+	<select id="getCountBy" resultType="Integer">
+	    select
+			count(1)
+		from scada_data.modify_log ml
+		where 1=1
+			<if test="ffMap.tableName != null and ffMap.tableName != ''">
+			    and ml.table_name = #{ffMap.tableName}
+			</if>
+			<if test="ffMap.fieldName != null and ffMap.fieldName != ''">
+			    and ml.field_name = #{ffMap.fieldName}
+			</if>
+			<if test="ffMap.begDt != null and ffMap.begDt != ''">
+			    <![CDATA[
+			    and ml.sensordd >=  to_date(#{ffMap.begDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    ]]>
+			</if>
+			<if test="ffMap.endDt != null and ffMap.endDt != ''">
+			    <![CDATA[
+			    and ml.sensordd >=  to_date(#{ffMap.endDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    ]]>
+			</if>
+			and ml.cd_status = 2
+			and ml.nb = (select max(tl.nb) from scada_data.modify_log tl where tl.table_name = ml.table_name and tl.field_name = ml.field_name and tl.sensordd = ml.sensordd and tl.cd_status = 2)
+	</select>
+	
+	<select id="getModifyLogAndSensor" resultType="ModifyLogAndSensor">
+	    select
+	    	ml.nb,
+			ml.table_name as tableName,
+			ml.field_name as fieldName,
+			to_char(ml.sensordd, 'yyyy-mm-dd hh24:mi:ss') as sensorDd,
+			ml.ori_field_value as oriFieldValue,
+			ml.new_field_value as newFieldValue,
+			ml.modify_reason as modifyReason,
+			ml.modify_method as modifyMethod,
+			ml.modify_by as modifyBy,
+			to_char(ml.modify_dt, 'yyyy-mm-dd hh24:mi:ss') as modifyDt,
+			ss.scada_tag_name as scadaTagName,
+			ss.field_type as fieldType
+		from scada_data.modify_log ml
+		inner join scada_data.scada2015_sensor ss on ml.table_name = ss.new_table_name and ml.field_name = ss.new_field_name
+		where 
+			ml.cd_status = #{statusCd}
+			and ml.sync_scada_dt is null
+			and ss.field_type in('accumulate', 'instant')
+	    order by ml.batch_nb, ml.sensordd
+	</select>
+</mapper> 

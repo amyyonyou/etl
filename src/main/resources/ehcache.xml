@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache name="omsCache" updateCheck="false">
+
+	<sizeOfPolicy maxDepth="100" maxDepthExceededBehavior="abort" />
+
+	<diskStore path="/var/ehcache/dms_mw" />
+
+	<defaultCache maxEntriesLocalHeap="100" eternal="false"
+		timeToIdleSeconds="300" timeToLiveSeconds="600" overflowToDisk="true"
+		maxEntriesLocalDisk="100000" />
+
+</ehcache>

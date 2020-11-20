@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mw.ctdb.rtdb.modifydelta.ModifyDeltaDao">
+    
+	<update id="updBy">
+		update scada_data.${tableName} set
+		${fieldName} = #{fieldValue}
+		where sensordd = #{sensorDd}
+	</update>
+	
+	<insert id="add">
+		insert into scada_data.${tableName}
+		(sensordd, ${fieldName})
+		values
+		(#{sensorDd}, #{fieldValue})
+	</insert>
+
+	<select id="getOriFieldValue" resultType="Double">
+		select
+		    (case when ori_field_value is null then fieldValue else ori_field_value end) as fieldValue
+		from
+		(
+		select ${fieldName} as fieldValue, (select ori_field_value from scada_data.modify_log where nb = (select min(nb) from scada_data.modify_log where table_name = #{tableName} and field_name = #{fieldName} and sensordd = #{sensorDd})) as ori_field_value
+		from scada_data.${tableName}
+		where 
+		sensordd = #{sensorDd}
+		)
+	</select>
+
+	<select id="getBy" resultType="ModifyDeltaView">
+	    select
+			tableName, fieldName, sensorDd,
+			(case when oriFieldValue is null then curFieldValue else oriFieldValue end) as oriFieldValue,
+			curFieldValue,
+			(case when newFieldValue is null then curFieldValue else newFieldValue end) as newFieldValue,
+			modifyReason, modifyMethod, sensorDdStr
+		from
+		(
+			select
+			'${tableName}' as tableName, '${fieldName}' as fieldName, t.sensordd as sensorDd,
+			(select ori_field_value from scada_data.modify_log where nb = (select min(nb) from scada_data.modify_log where table_name = l.table_name and field_name = l.field_name and sensordd = l.sensordd and cd_status = 2)) as oriFieldValue,
+			t.${fieldName} as curFieldValue,
+			l.new_field_value as newFieldValue,
+			l.modify_reason as modifyReason, 
+			l.modify_method as modifyMethod,
+			to_char(t.sensordd, 'yyyy-mm-dd hh24:mi:ss') as sensorDdStr
+			from scada_data.${tableName} t
+			left join scada_data.modify_log l on t.sensordd = l.sensordd and l.table_name = '${tableName}' and l.field_name = '${fieldName}' and l.cd_status = 2
+				and l.nb = (select max(nb) from scada_data.modify_log where table_name = l.table_name and field_name = l.field_name and sensordd = l.sensordd and cd_status = 2)
+			where 1=1
+				<![CDATA[
+				and t.sensordd >= to_date(#{begDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    and t.sensordd <= to_date(#{endDt}, 'yyyy-mm-dd hh24:mi:ss')
+				]]>
+		 )
+        order by sensordd
+	</select>
+	
+	<select id="previewBy" resultType="ModifyDeltaView">
+		select
+			tableName, fieldName, sensorDd,
+			(case when oriFieldValue is null then curFieldValue else oriFieldValue end) as oriFieldValue,
+			curFieldValue,
+			(case when newFieldValue is null then curFieldValue else newFieldValue end) as newFieldValue,
+			modifyReason, modifyMethod, sensorDdStr
+		from
+		(
+			select
+			'${tableName}' as tableName, '${fieldName}' as fieldName, t.sensordd as sensorDd,
+			(select ori_field_value from scada_data.modify_log where nb = (select min(nb) from scada_data.modify_log where table_name = l.table_name and field_name = l.field_name and sensordd = l.sensordd and cd_status = 2)) as oriFieldValue,
+			t.${fieldName} as curFieldValue,
+			l.new_field_value as newFieldValue,
+			l.modify_reason as modifyReason, l.modify_method as modifyMethod,
+			to_char(t.sensordd, 'yyyy-mm-dd hh24:mi:ss') as sensorDdStr
+			from scada_data.${tableName} t
+			left join scada_data.modify_log l on t.sensordd = l.sensordd and l.table_name = '${tableName}' and l.field_name = '${fieldName}' and l.cd_status = 1 and l.batch_nb = #{batchNb}
+				and l.nb = (select max(nb) from scada_data.modify_log where table_name = l.table_name and field_name = l.field_name and sensordd = l.sensordd and cd_status = 1)
+			where 1=1
+				<![CDATA[
+				and t.sensordd >= to_date(#{begDt}, 'yyyy-mm-dd hh24:mi:ss')
+			    and t.sensordd <= to_date(#{endDt}, 'yyyy-mm-dd hh24:mi:ss')
+				]]>
+		 )
+        order by sensordd
+	</select>
+
+</mapper>
